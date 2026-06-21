@@ -30,17 +30,17 @@ describe('index.js Component Tests', () => {
 
     it('should keep company uppercase', () => {
       const payload = {
-        source: 'epam.com',
-        company: 'epam systems international srl',
-        cif: '33159615',
+        source: 'greenhouse.io',
+        company: 'connatix native exchange romania srl',
+        cif: '35861771',
         jobs: [
-          { url: 'https://test.com/1', title: 'Job 1', company: 'epam systems', cif: '33159615' }
+          { url: 'https://test.com/1', title: 'Job 1', company: 'connatix', cif: '35861771' }
         ]
       };
 
       const result = index.transformJobsForSOLR(payload);
 
-      expect(result.company).toBe('EPAM SYSTEMS INTERNATIONAL SRL');
+      expect(result.company).toBe('CONNATIX NATIVE EXCHANGE ROMANIA SRL');
     });
 
     it('should normalize workmode values', () => {
@@ -70,15 +70,15 @@ describe('index.js Component Tests', () => {
   describe('mapToJobModel', () => {
     it('should map raw job to job model format', () => {
       const rawJob = {
-        url: 'https://careers.epam.com/job/123',
-        title: 'Senior Developer',
-        location: ['Bucharest'],
-        tags: ['Java', 'Spring'],
+        url: 'https://jwx.com/careers/job-posting?gh_jid=123',
+        title: 'Software Engineer',
+        location: ['Cluj-Napoca'],
+        tags: ['engineering'],
         workmode: 'hybrid'
       };
 
-      const COMPANY_NAME = 'EPAM SYSTEMS INTERNATIONAL SRL';
-      const COMPANY_CIF = '33159615';
+      const COMPANY_NAME = 'CONNATIX NATIVE EXCHANGE ROMANIA SRL';
+      const COMPANY_CIF = '35861771';
 
       const result = index.mapToJobModel(rawJob, COMPANY_CIF, COMPANY_NAME);
 
@@ -99,7 +99,7 @@ describe('index.js Component Tests', () => {
         title: 'Job 1'
       };
 
-      const result = index.mapToJobModel(rawJob, '33159615');
+      const result = index.mapToJobModel(rawJob, '35861771');
 
       expect(result.location).toBeUndefined();
       expect(result.tags).toBeUndefined();
@@ -109,112 +109,88 @@ describe('index.js Component Tests', () => {
     it('should handle missing title', () => {
       const rawJob = { url: 'https://test.com/1' };
 
-      const result = index.mapToJobModel(rawJob, '33159615');
+      const result = index.mapToJobModel(rawJob, '35861771');
 
       expect(result.title).toBeUndefined();
       expect(result.url).toBe('https://test.com/1');
     });
   });
 
-  describe('parseApiJobs', () => {
-    it('should parse EPAM API response format', () => {
+  describe('parseGreenhouseJobs', () => {
+    it('should parse Greenhouse API response format', () => {
       const apiData = {
-        data: {
-          total: 100,
-          jobs: [
-            {
-              uid: '123',
-              name: 'Senior Developer',
-              city: [{ name: 'Bucharest' }],
-              country: [{ name: 'Romania' }],
-              vacancy_type: 'Hybrid',
-              skills: ['Java', 'Spring']
-            }
-          ]
-        }
+        jobs: [
+          {
+            id: 123,
+            title: 'Software Engineer',
+            absolute_url: 'https://jwx.com/careers/job-posting?gh_jid=123',
+            location: { name: 'Cluj-Napoca' },
+            departments: [{ name: 'Engineering' }],
+            offices: [{ name: 'Cluj-Napoca' }]
+          }
+        ],
+        meta: { total: 1 }
       };
 
-      const result = index.parseApiJobs(apiData);
+      const result = index.parseGreenhouseJobs(apiData);
 
       expect(result.jobs).toHaveLength(1);
-      expect(result.jobs[0].title).toBe('Senior Developer');
-      expect(result.jobs[0].location).toEqual(['Bucharest']);
-      expect(result.jobs[0].workmode).toBe('hybrid');
+      expect(result.jobs[0].title).toBe('Software Engineer');
+      expect(result.jobs[0].url).toBe('https://jwx.com/careers/job-posting?gh_jid=123');
+      expect(result.jobs[0].location).toEqual(['Cluj-Napoca']);
     });
 
     it('should handle empty job list', () => {
-      const apiData = { data: { total: 0, jobs: [] } };
+      const apiData = { jobs: [], meta: { total: 0 } };
 
-      const result = index.parseApiJobs(apiData);
+      const result = index.parseGreenhouseJobs(apiData);
 
       expect(result.jobs).toEqual([]);
     });
 
     it('should handle missing data field', () => {
-      const result = index.parseApiJobs({});
+      const result = index.parseGreenhouseJobs({});
 
       expect(result.jobs).toEqual([]);
     });
 
-    it('should handle multiple cities', () => {
+    it('should map departments to tags', () => {
       const apiData = {
-        data: {
-          total: 1,
-          jobs: [
-            {
-              uid: '123',
-              name: 'Developer',
-              city: [{ name: 'Bucharest' }, { name: 'Cluj-Napoca' }],
-              country: [{ name: 'Romania' }]
-            }
-          ]
-        }
+        jobs: [
+          {
+            id: 456,
+            title: 'Developer',
+            absolute_url: 'https://jwx.com/careers/job-posting?gh_jid=456',
+            location: { name: 'Bucharest' },
+            departments: [{ name: 'Engineering' }, { name: 'Product' }]
+          }
+        ],
+        meta: { total: 1 }
       };
 
-      const result = index.parseApiJobs(apiData);
+      const result = index.parseGreenhouseJobs(apiData);
 
-      expect(result.jobs[0].location).toEqual(['Bucharest', 'Cluj-Napoca']);
+      expect(result.jobs[0].tags).toEqual(['engineering', 'product']);
     });
   });
 
   describe('URL Generation', () => {
-    it('should use seo.url when available', () => {
+    it('should use absolute_url from Greenhouse API', () => {
       const apiData = {
-        data: {
-          total: 1,
-          jobs: [
-            {
-              uid: 'blt123',
-              name: 'Test Job',
-              seo: { url: '/en/vacancy/test-job-blt123_en' },
-              city: [{ name: 'Bucharest' }]
-            }
-          ]
-        }
+        jobs: [
+          {
+            id: 789,
+            title: 'Test Job',
+            absolute_url: 'https://jwx.com/careers/job-posting?gh_jid=789',
+            location: { name: 'Cluj-Napoca' }
+          }
+        ],
+        meta: { total: 1 }
       };
 
-      const result = index.parseApiJobs(apiData);
+      const result = index.parseGreenhouseJobs(apiData);
 
-      expect(result.jobs[0].url).toBe('https://careers.epam.com/en/vacancy/test-job-blt123_en');
-    });
-
-    it('should fallback to uid-based URL when no seo.url', () => {
-      const apiData = {
-        data: {
-          total: 1,
-          jobs: [
-            {
-              uid: 'blt456',
-              name: 'Test Job',
-              city: [{ name: 'Bucharest' }]
-            }
-          ]
-        }
-      };
-
-      const result = index.parseApiJobs(apiData);
-
-      expect(result.jobs[0].url).toBe('https://careers.epam.com/en/vacancy/blt456_en');
+      expect(result.jobs[0].url).toBe('https://jwx.com/careers/job-posting?gh_jid=789');
     });
   });
 });

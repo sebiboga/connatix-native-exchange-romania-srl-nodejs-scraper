@@ -1,11 +1,11 @@
 {
-  "cif": "33159615",
-  "legalName": "EPAM SYSTEMS INTERNATIONAL SRL",
-  "brand": "EPAM",
-  "website": "https://www.epam.com",
-  "careerUrl": "https://careers.epam.com",
-  "apiBase": "https://careers.epam.com",
-  "apiCountryId": "8150000000000001155",
-  "defaultLocation": "București",
-  "scraperFile": "https://raw.githubusercontent.com/sebiboga/epam-systems-international-srl-nodejs-scraper/main/.github/workflows/job-seeker-ro-spider.yml"
+  "cif": "35861771",
+  "legalName": "CONNATIX NATIVE EXCHANGE ROMANIA SRL",
+  "brand": "connatix",
+  "website": "https://jwx.com",
+  "careerUrl": "https://jwx.com/careers",
+  "apiBase": "https://boards-api.greenhouse.io/v1/boards/jwp",
+  "apiEndpoint": "/jobs",
+  "defaultLocation": "Cluj-Napoca",
+  "scraperFile": "https://raw.githubusercontent.com/sebiboga/connatix-native-exchange-romania-srl-nodejs-scraper/main/.github/workflows/job-seeker-ro-spider.yml"
 }
