@@ -136,10 +136,10 @@ describe('E2E: Full Scraping Pipeline', () => {
         jobs
       };
 
-      const transformed = index.transformJobsForSOLR(payload);
+      const transformed = index.transformJobsForSOLR(payload, true);
 
       expect(transformed.company).toBe('CONNATIX NATIVE EXCHANGE ROMANIA SRL');
-      expect(transformed.jobs.length).toBe(jobs.length);
+      expect(transformed.jobs.length).toBeLessThanOrEqual(jobs.length);
 
       for (const job of transformed.jobs) {
         expect(job).toHaveProperty('location');

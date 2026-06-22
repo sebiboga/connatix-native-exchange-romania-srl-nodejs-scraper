@@ -151,7 +151,7 @@ function mapToJobModel(rawJob, cif, companyName = COMPANY_NAME) {
   return job;
 }
 
-function transformJobsForSOLR(payload) {
+function transformJobsForSOLR(payload, filterNonRomanian = false) {
   const romanianCities = [
     'Bucharest', 'București', 'Cluj-Napoca', 'Cluj Napoca',
     'Timișoara', 'Timisoara', 'Iași', 'Iasi', 'Brașov', 'Brasov',
@@ -176,22 +176,37 @@ function transformJobsForSOLR(payload) {
     return 'hybrid';
   };
 
+    const isRomanianLocation = (loc) => {
+    const lower = loc.toLowerCase().trim();
+    if (lower === 'romania' || lower === 'românia') return true;
+    return citySet.has(lower);
+  };
+
   const transformed = {
     ...payload,
     company: payload.company?.toUpperCase(),
-    jobs: payload.jobs.map(job => {
-      const validLocations = (job.location || []).filter(loc => {
-        const lower = loc.toLowerCase().trim();
-        if (lower === 'romania' || lower === 'românia') return true;
-        return citySet.has(lower);
-      }).map(loc => loc.toLowerCase() === 'romania' ? 'România' : loc);
+    jobs: payload.jobs
+      .map(job => {
+        const validLocations = (job.location || []).filter(isRomanianLocation)
+          .map(loc => loc.toLowerCase() === 'romania' ? 'România' : loc);
+        const workmode = normalizeWorkmode(job.workmode);
 
-      return {
-        ...job,
-        location: validLocations.length > 0 ? validLocations : ['România'],
-        workmode: normalizeWorkmode(job.workmode)
-      };
-    })
+        return {
+          ...job,
+          location: validLocations.length > 0 ? validLocations : (filterNonRomanian ? undefined : ['România']),
+          workmode
+        };
+      })
+      .filter(job => {
+        if (!filterNonRomanian) return true;
+        return (job.location && job.location.length > 0) || job.workmode === 'remote';
+      })
+      .map(job => {
+        if (job.workmode === 'remote' && (!job.location || job.location.length === 0)) {
+          return { ...job, location: ['România'] };
+        }
+        return job;
+      })
   };
 
   return transformed;
@@ -254,7 +269,7 @@ async function main() {
     };
 
     console.log("Transforming jobs for SOLR...");
-    const transformedPayload = transformJobsForSOLR(payload);
+    const transformedPayload = transformJobsForSOLR(payload, true);
     const validCount = transformedPayload.jobs.filter(j => j.location).length;
     console.log(`Jobs with valid Romanian locations: ${validCount}`);
 
