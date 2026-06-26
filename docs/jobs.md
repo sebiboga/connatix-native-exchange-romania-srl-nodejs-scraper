@@ -10,11 +10,11 @@
 | Location | PLOIEŞTI, 36-36N, 38, Municipiul Cluj-Napoca, Cluj |
 | Website | [https://jwx.com](https://jwx.com) |
 | Careers | [https://jwx.com/careers](https://jwx.com/careers) |
-| Last Scraped | 2026-06-25 |
+| Last Scraped | 2026-06-26 |
 
 ## Current Job Listings (1)
 
-_Generated: 2026-06-25T09:31:06.590Z_
+_Generated: 2026-06-26T09:36:08.805Z_
 
 ### Revenue Operations Director
 
