@@ -10,8 +10,8 @@
 | Location | PLOIEŞTI, 36-36N, 38, Municipiul Cluj-Napoca, Cluj |
 | Website | [https://jwx.com](https://jwx.com) |
 | Careers | [https://jwx.com/careers](https://jwx.com/careers) |
-| Last Scraped | 2026-07-22 |
+| Last Scraped | 2026-07-23 |
 
 ## Current Job Listings (0)
 
-_Generated: 2026-07-22T08:35:31.663Z_
+_Generated: 2026-07-23T08:37:23.576Z_
